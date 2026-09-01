@@ -33,6 +33,15 @@ public partial class StatusIconData : IComparable<StatusIconData>
     public bool VisibleToGhosts = true;
 
     /// <summary>
+    /// Whether or not to show the icon to admin ghosts (ghosts that can
+    /// interact, i.e. spawned via aghost) even when <see cref="VisibleToGhosts" />
+    /// is false. Lets admins see team markers without leaking them to dead
+    /// players watching as regular ghosts.
+    /// </summary>
+    [DataField]
+    public bool VisibleToAdminGhosts = false;
+
+    /// <summary>
     /// Whether or not to hide the icon when we are inside a container like a locker or a crate.
     /// </summary>
     [DataField]
@@ -82,6 +91,7 @@ public partial class StatusIconData : IComparable<StatusIconData>
 /// <summary>
 /// <see cref="StatusIconData"/> but in new convenient prototype form!
 /// </summary>
+[DataDefinition]
 public abstract partial class StatusIconPrototype : StatusIconData, IPrototype
 {
     /// <inheritdoc/>

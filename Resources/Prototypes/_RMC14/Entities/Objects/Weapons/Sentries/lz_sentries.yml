@@ -1,4 +1,4 @@
-﻿- type: entity
+- type: entity
   parent: BaseStructure
   abstract: true
   id: RMCBaseTurret
@@ -73,7 +73,7 @@
     radius: 40
     energy: 10.0
     color: "#880808"
-    mask: /Textures/Effects/LightMasks/double_cone.png
+    lightMask: ConeDouble
   - type: RotatingLight
     speed: 90
   - type: Gun
@@ -184,7 +184,7 @@
       preset: TargetDistance
   - !type:TargetAccessibleCon
     curve: !type:BoolCurve
-  - !type:TargetInLOSOrCurrentCon
+  - !type:TargetBulletLOSCon # CMU14
     curve: !type:BoolCurve
   - !type:CanFaceCon
     curve: !type:BoolCurve
@@ -204,7 +204,7 @@
       preset: TargetDistance
   - !type:TargetAccessibleCon
     curve: !type:BoolCurve
-  - !type:TargetInLOSOrCurrentCon
+  - !type:TargetBulletLOSCon # CMU14
     curve: !type:BoolCurve
   - !type:CanFaceCon
     curve: !type:BoolCurve

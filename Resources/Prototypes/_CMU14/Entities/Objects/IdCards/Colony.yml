@@ -198,7 +198,7 @@
   components:
   - type: JobTitleChanger
     jobTitle: Colony Administration Advisor Synthetic
-    
+
 - type: entity
   parent: AU14IDCardColonySynthetic
   id: AU14IDCardColonySyntheticResearch
@@ -230,6 +230,17 @@
   - type: ItemIFF
     factions:
     - FactionWEYU
+
+- type: entity
+  parent: AU14IDCardBaseCivilianNoIFF
+  id: CMU14IDCardColonyProdigyLiaison
+  name: prodigy liaison ID card
+  components:
+  - type: PresetIdCard
+    job: CMU14JobCivilianProdigyLiaison
+  - type: ItemIFF
+    factions:
+    - FactionProdigy
 
 - type: entity
   parent: AU14IDCardBaseCivilianNoIFF
@@ -554,3 +565,18 @@
   components:
   - type: PresetIdCard
     job: AU14JobCivilianKellandWarden
+
+# ├──[ Antags ]──────────────────────────────────────────────────────┤
+- type: entity
+  parent: AU14IDCardBaseCivilianNoIFF
+  id: CMUIDCardWYAgent
+  name: Weyland-Yutani ID card
+  description: A corporate identification badge with Weyland-Yutani branding. Grants access to company facilities.
+  components:
+  - type: IdCard
+    nameLocId: cm-access-id-card-component-owner-name-job-title-text
+    fullNameLocId: cm-access-id-card-component-owner-full-name-job-title-text
+    canMicrowave: false
+  - type: Access
+    groups:
+    - auwy

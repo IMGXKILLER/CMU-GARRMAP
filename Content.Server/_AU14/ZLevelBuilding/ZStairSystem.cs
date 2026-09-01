@@ -33,12 +33,12 @@ namespace Content.Server._AU14.ZLevelBuilding;
 /// The traversal stair / companion (<see cref="ZStairComponent.PartnerProto"/>) carries NO ZStairComponent,
 /// so this system never fires for it and there is no recursive setup.
 /// </summary>
-public sealed class ZStairSystem : EntitySystem
+public sealed partial class ZStairSystem : EntitySystem
 {
-    [Dependency] private readonly ZLevelBuildingSystem _building = default!;
-    [Dependency] private readonly SharedMapSystem _map = default!;
-    [Dependency] private readonly SharedTransformSystem _transform = default!;
-    [Dependency] private readonly ITileDefinitionManager _tileDef = default!;
+    [Dependency] private  ZLevelBuildingSystem _building = default!;
+    [Dependency] private  SharedMapSystem _map = default!;
+    [Dependency] private  SharedTransformSystem _transform = default!;
+    [Dependency] private  ITileDefinitionManager _tileDef = default!;
 
     private EntityQuery<MapGridComponent> _gridQuery;
     private int _deferSetup;
@@ -98,13 +98,16 @@ public sealed class ZStairSystem : EntitySystem
 
         var stairTile = _map.TileIndicesFor(gridUid, grid, xform.Coordinates);
         var stairWorld = _transform.ToMapCoordinates(_map.GridTileToLocal(gridUid, grid, stairTile)).Position;
-        var beamTile = stairTile + ent.Comp.BeamOffset;
+        var rotatedBeamOffset = xform.LocalRotation.RotateVec((Vector2) ent.Comp.BeamOffset);
+        var beamTile = stairTile + new Vector2i(
+            (int) MathF.Round(rotatedBeamOffset.X),
+            (int) MathF.Round(rotatedBeamOffset.Y));
         var beamWorld = _transform.ToMapCoordinates(_map.GridTileToLocal(gridUid, grid, beamTile)).Position;
 
         if (ent.Comp.Direction > 0)
             SetupUpStair(ent, mapUid, gridUid, grid, stairTile, stairWorld, beamWorld);
         else
-            SetupDownStair(ent, mapUid, gridUid, grid, stairTile, stairWorld, beamWorld);
+            SetupDownStair(ent, mapUid, gridUid, grid, stairTile, stairWorld, beamWorld, xform.LocalRotation);
     }
 
     // UP stair: ensure level above, lay a platform ring with an open shaft above, support beam on this level.
@@ -148,12 +151,13 @@ public sealed class ZStairSystem : EntitySystem
         MapGridComponent grid,
         Vector2i stairTile,
         Vector2 stairWorld,
-        Vector2 beamWorld)
+        Vector2 beamWorld,
+        Angle rotation)
     {
         if (!_building.PrepareStoneForStair(mapUid, gridUid, stairWorld, out var stoneGrid))
             return;
 
-        var companion = PlaceTraversalStair(stoneGrid, stairWorld, ent.Comp.PartnerProto);
+        var companion = PlaceTraversalStair(stoneGrid, stairWorld, ent.Comp.PartnerProto, rotation);
 
         // Guarantee solid ground at and around the landing BEFORE the shaft opens. Stone chunk generation is
         // lazy (per-chunk-on-approach), so a landing spot near a chunk edge can still have EMPTY neighbour
@@ -177,7 +181,7 @@ public sealed class ZStairSystem : EntitySystem
     }
 
     // Spawns the bare traversal stair on the connected LOWER level. It has no ZStair, so this never recurses.
-    private EntityUid? PlaceTraversalStair(EntityUid gridUid, Vector2 worldPos, string proto)
+    private EntityUid? PlaceTraversalStair(EntityUid gridUid, Vector2 worldPos, string proto, Angle rotation)
     {
         if (!_gridQuery.TryComp(gridUid, out var grid) || string.IsNullOrEmpty(proto))
             return null;
@@ -190,10 +194,15 @@ public sealed class ZStairSystem : EntitySystem
         foreach (var anchored in _map.GetAnchoredEntities(gridUid, grid, tile))
         {
             if (MetaData(anchored).EntityPrototype?.ID == proto)
+            {
+                _transform.SetLocalRotation(anchored, rotation);
                 return anchored;
+            }
         }
 
-        return Spawn(proto, _map.GridTileToLocal(gridUid, grid, tile));
+        var spawned = Spawn(proto, _map.GridTileToLocal(gridUid, grid, tile));
+        _transform.SetLocalRotation(spawned, rotation);
+        return spawned;
     }
 
     private EntityUid? PlaceBeamWall(EntityUid gridUid, Vector2 worldPos, string beam)

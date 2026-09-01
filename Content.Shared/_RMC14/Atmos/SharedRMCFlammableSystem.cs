@@ -52,7 +52,6 @@ public abstract partial class SharedRMCFlammableSystem : EntitySystem
     [Dependency] private SharedDoAfterSystem _doAfter = default!;
     [Dependency] private EntityWhitelistSystem _entityWhitelist = default!;
     [Dependency] private SharedHandsSystem _hands = default!;
-    [Dependency] private IMapManager _map = default!;
     [Dependency] private INetManager _net = default!;
     [Dependency] private SharedOnCollideSystem _onCollide = default!;
     [Dependency] private SharedPhysicsSystem _physics = default!;
@@ -74,6 +73,7 @@ public abstract partial class SharedRMCFlammableSystem : EntitySystem
 
     private static readonly ProtoId<ReagentPrototype> WaterReagent = "Water";
     private static readonly ProtoId<TagPrototype> StructureTag = "Structure";
+    private readonly List<EntityUid> _igniteContacts = new(); // CMU14: igniting anchors new fire on the tile, mutating the anchored set mid-enumeration
     private static readonly ProtoId<TagPrototype> WallTag = "Wall";
     private static readonly ProtoId<DamageTypePrototype> HeatDamage = "Heat";
 
@@ -280,7 +280,7 @@ public abstract partial class SharedRMCFlammableSystem : EntitySystem
         var coords = _transform.GetMoverCoordinates(ent);
         _audio.PlayPvs(ent.Comp.Sound, coords);
 
-        var tile = coords.SnapToGrid(EntityManager, _map);
+        var tile = coords.SnapToGrid(EntityManager);
         SpawnFireDiamond(ent.Comp.Spawn, tile, ent.Comp.Range, ent.Comp.Intensity, ent.Comp.Duration);
         QueueDel(ent);
     }
@@ -308,7 +308,7 @@ public abstract partial class SharedRMCFlammableSystem : EntitySystem
 
     private void OnTileFireOnTriggerExplosive(Entity<TileFireOnTriggerComponent> ent, ref CMExplosiveTriggeredEvent args)
     {
-        var coords = _transform.GetMoverCoordinates(ent).SnapToGrid(EntityManager, _map);
+        var coords = _transform.GetMoverCoordinates(ent).SnapToGrid(EntityManager);
         SpawnFireDiamond(ent.Comp.Spawn, coords, ent.Comp.Range, ent.Comp.Intensity, ent.Comp.Duration);
     }
 
@@ -996,10 +996,11 @@ public abstract partial class SharedRMCFlammableSystem : EntitySystem
             while (applyQuery.MoveNext(out var uid, out var apply))
             {
                 var enumerator = _rmcMap.GetAnchoredEntitiesEnumerator(uid);
+                _igniteContacts.Clear(); // CMU14: snapshot the tile, igniting mutates the anchored set
                 while (enumerator.MoveNext(out var contact))
-                {
+                    _igniteContacts.Add(contact);
+                foreach (var contact in _igniteContacts)
                     TryIgnite((uid, apply), contact, true);
-                }
 
                 if (apply.InitDamaged)
                     continue;

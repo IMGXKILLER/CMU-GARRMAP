@@ -3,7 +3,7 @@ using Content.Server.AU14.Round;
 using Content.Server.Popups;
 using Content.Shared._CMU14.Round.Objectives;
 using Content.Shared._CMU14.Round.Objectives.Type;
-using Content.Shared._CMU14.Round.Objectives.Component;
+using Content.Shared._CMU14.Round.Objectives.Components;
 using Content.Shared.Damage;
 using Content.Shared.NPC.Components;
 using Content.Shared.Popups;
@@ -17,7 +17,7 @@ public sealed partial class ObjCaptureSystem : ObjectiveSystem
 
     private readonly Dictionary<EntityUid, float> _timeSinceLastIncrement = new();
     private readonly Dictionary<EntityUid, float> _lastSlashDamage = new();
-    private static readonly string[] HoistAllowedFactions = ["govfor", "opfor", "clf"];
+    private static readonly string[] HoistAllowedFactions = ["govfor", "opfor", "clf", "weyu"];
 
     public override void Initialize()
     {
@@ -66,7 +66,7 @@ public sealed partial class ObjCaptureSystem : ObjectiveSystem
 
         var userFactions = new List<string>();
         if (args.User != EntityUid.Invalid && TryComp(args.User, out NpcFactionMemberComponent? factionComp))
-            userFactions.AddRange(factionComp.Factions.Select(f => f.ToString().ToLowerInvariant()));
+            userFactions.AddRange(factionComp.Factions.Select(f => f.ToString().ToLowerInvariant() switch { "auweyu" => "weyu", var id => id })); // WeYu roles carry the npcFaction id AUWeYu; the objective faction key is weyu
 
         var hoistingFaction = args.Faction.ToLowerInvariant();
         if (!userFactions.Contains(hoistingFaction))

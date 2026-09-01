@@ -61,7 +61,6 @@ namespace Content.Shared.Weapons.Melee;
 public abstract partial class SharedMeleeWeaponSystem : EntitySystem
 {
     [Dependency] protected IGameTiming Timing = default!;
-    [Dependency] protected IMapManager MapManager = default!;
     [Dependency] private   INetManager _netMan = default!;
     [Dependency] private   IPrototypeManager _protoManager = default!;
     [Dependency] private   IRobustRandom _random = default!;
@@ -921,9 +920,10 @@ public abstract partial class SharedMeleeWeaponSystem : EntitySystem
             _meleeSound.PlayHitSound(target, user, GetHighestDamageSound(appliedDamage, _protoManager), hitEvent.HitSoundOverride, component);
         }
 
-        if (appliedDamage.GetTotal() > FixedPoint2.Zero)
+        if (appliedDamage.GetTotal() > FixedPoint2.Zero &&
+            TryComp(targets[0], out TransformComponent? targetXform)) // CMU14: on-hit effects can delete the target mid-swing
         {
-            DoDamageEffect(targets, user, Transform(targets[0]));
+            DoDamageEffect(targets, user, targetXform);
         }
 
         return true;

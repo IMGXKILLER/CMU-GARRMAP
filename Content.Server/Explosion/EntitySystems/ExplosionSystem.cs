@@ -36,7 +36,6 @@ namespace Content.Server.Explosion.EntitySystems;
 public sealed partial class ExplosionSystem : SharedExplosionSystem
 {
     [Dependency] private ESScreenshakeSystem _shake = default!;
-    [Dependency] private IMapManager _mapManager = default!;
     [Dependency] private IRobustRandom _robustRandom = default!;
     [Dependency] private ITileDefinitionManager _tileDefinitionManager = default!;
     [Dependency] private IPrototypeManager _prototypeManager = default!;
@@ -165,11 +164,14 @@ public sealed partial class ExplosionSystem : SharedExplosionSystem
             totalIntensity ??= RadiusToIntensity((float)radius, explosive.IntensitySlope, explosive.MaxIntensity);
         totalIntensity ??= explosive.TotalIntensity;
 
+        var properties = new GetExplosionTriggerPropertiesEvent(totalIntensity.Value, explosive.MaxIntensity);
+        RaiseLocalEvent(uid, ref properties);
+
         QueueExplosion(uid,
             explosive.ExplosionType,
-            (float)totalIntensity,
+            Math.Max(0, properties.TotalIntensity),
             explosive.IntensitySlope,
-            explosive.MaxIntensity,
+            Math.Max(0, properties.MaxIntensity),
             explosive.TileBreakScale,
             explosive.MaxTileBreak,
             explosive.CanCreateVacuum,
@@ -414,7 +416,6 @@ public sealed partial class ExplosionSystem : SharedExplosionSystem
             queued.MaxTileBreak,
             queued.CanCreateVacuum,
             EntityManager,
-            _mapManager,
             visualEnt,
             queued.Cause,
             _map);

@@ -13,6 +13,9 @@
     maxSpeed: 8
     acceleration: 5
     deceleration: 12
+    maxRotationSpeedDegrees: 45
+    rotationAccelerationDegrees: 90
+    rotationDecelerationDegrees: 120
     turnDelay: 0.25
     pushCooldown: 2
     xenoBlockMinimumSize: Xeno
@@ -44,7 +47,7 @@
       path: /Audio/_RMC14/Vehicle/box_van_driving.ogg
       params:
         volume: -4
-    runningSoundCooldown: 2.25
+    runningSoundCooldown: 2.3
     hornSound: /Audio/_RMC14/Vehicle/honk_4_light.ogg
     hornCooldown: 1
     collisionSound:
@@ -232,6 +235,9 @@
     maxSpeed: 8
     acceleration: 5
     deceleration: 12
+    maxRotationSpeedDegrees: 45
+    rotationAccelerationDegrees: 90
+    rotationDecelerationDegrees: 120
     turnDelay: 0.25
     pushCooldown: 2
     xenoBlockMinimumSize: Xeno
@@ -264,7 +270,7 @@
       params:
         volume: -5
         pitch: 0.92
-    runningSoundCooldown: 2.25
+    runningSoundCooldown: 2.3
     hornSound: /Audio/_RMC14/Vehicle/box_van_horn.ogg
     hornCooldown: 1
     collisionSound:
@@ -288,7 +294,7 @@
       world:
         shape:
           !type:PhysShapeAabb
-          bounds: -0.425,1.4,0.425,-0.35
+          bounds: -0.425,-0.35,0.425,1.4
         density: 1000
         mask:
         - Impassable
@@ -300,7 +306,7 @@
       mob:
         shape:
           !type:PhysShapeAabb
-          bounds: -0.425,1.4,0.425,-0.35
+          bounds: -0.425,-0.35,0.425,1.4
         density: 1000
         mask:
         - MidImpassable
